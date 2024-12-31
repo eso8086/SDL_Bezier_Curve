@@ -1,31 +1,30 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.14)
 project(Bezier_Curve_SDL)
-
 set(CMAKE_CXX_STANDARD 14)
-add_subdirectory(vendor/SDL2)
-file(GLOB SOURCES "src/*.cpp" "src/*.h")
-add_executable(bezier Main.cpp ${SOURCES})
 
-set(SDL_GFX_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL2_gfx-1.0.4")
+option(USE_VENDOR_SDL "Use vendored SDL libraries" ON)
 
-add_custom_target(gfx
-    COMMENT "Building SDL2_GFX library"
-    COMMAND make
-    WORKING_DIRECTORY ${SDL_GFX_DIR}
-)
-target_link_libraries(bezier PRIVATE SDL2::SDL2)
-
-target_include_directories(bezier PRIVATE ${SDL_GFX_DIR})
-
-add_dependencies(bezier gfx)
-
-find_library(GFX_LIB NAMES SDL2_gfx HINTS ${SDL_GFX_DIR}/.libs)
-
-
-if (NOT GFX_LIB)
-    message(FATAL_ERROR "SDL2_gfx library not found!")
+if(USE_VENDOR_SDL)
+    add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL EXCLUDE_FROM_ALL)
+else()
+    find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
+    find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
 endif()
 
-target_link_libraries(bezier PRIVATE ${GFX_LIB})
+
+file(GLOB GFX_SOURCES "vendor/SDL2_gfx-1.0.4/*.c")
+add_library(SDL2_gfx SHARED ${GFX_SOURCES})
+
+target_link_libraries(SDL2_gfx PRIVATE SDL2::SDL2)
+
+file(GLOB SOURCES "src/*.cpp")
+add_executable(Bezier Main.cpp ${SOURCES})
+
+target_include_directories(Bezier PRIVATE vendor/SDL2_gfx-1.0.4 src)
+
+if(TARGET SDL2::SDL2main)
+    target_link_libraries(Bezier PRIVATE SDL2::SDL2main)
+endif()
 
 
+target_link_libraries(Bezier PRIVATE SDL2::SDL2 SDL2_gfx)
