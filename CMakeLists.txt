@@ -2,13 +2,13 @@ cmake_minimum_required(VERSION 3.14)
 project(Bezier_Curve_SDL)
 set(CMAKE_CXX_STANDARD 14)
 
-option(USE_VENDOR_SDL "Use vendored SDL libraries" ON)
+option(USE_VENDOR_SDL "Use vendored SDL libraries" OFF)
 
 if(USE_VENDOR_SDL)
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/SDL EXCLUDE_FROM_ALL)
 else()
-    find_package(SDL2 REQUIRED CONFIG REQUIRED COMPONENTS SDL2)
-    find_package(SDL2 REQUIRED CONFIG COMPONENTS SDL2main)
+    find_package(SDL2 REQUIRED SDL2)
+    find_package(SDL2 REQUIRED SDL2main)
 endif()
 
 
